@@ -9,6 +9,11 @@ applyKotlinExpoModulesCorePlugin()
 useCoreDependencies()
 useExpoPublishing()
 
+repositories {
+  mavenCentral()
+  maven { url "https://maven.spotify.com/repository/releases" }
+}
+
 // If you want to use the managed Android SDK versions from expo-modules-core, set this to true.
 // The Android SDK versions will be bumped from time to time in SDK releases and may introduce breaking changes in your module code.
 // Most of the time, you may like to manage the Android SDK versions yourself.
@@ -45,4 +50,5 @@ android {
 dependencies {
    implementation 'com.squareup.okhttp3:okhttp:4.9.2'
    implementation "com.spotify.android:auth:2.1.2"
+   implementation "com.spotify.android:app-remote-lib:0.7.2"
 }
