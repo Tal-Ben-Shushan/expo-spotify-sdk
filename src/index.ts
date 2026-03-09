@@ -13,8 +13,26 @@ function authenticateAsync(config: SpotifyConfig): Promise<SpotifySession> {
   return ExpoSpotifySDKModule.authenticateAsync(config);
 }
 
+function connectToRemote(accessToken?: string): Promise<boolean> {
+  return ExpoSpotifySDKModule.connectToRemote(accessToken);
+}
+
+function disconnectFromRemote(): Promise<boolean> {
+  return ExpoSpotifySDKModule.disconnectFromRemote();
+}
+
+function playURI(uri: string, accessToken?: string): Promise<boolean> {
+  return ExpoSpotifySDKModule.playURI(uri, accessToken);
+}
+
+const Remote = {
+  connectToRemote,
+  disconnectFromRemote,
+  playURI,
+};
+
 const Authenticate = {
   authenticateAsync,
 };
 
-export { isAvailable, Authenticate };
+export { isAvailable, Authenticate, Remote };

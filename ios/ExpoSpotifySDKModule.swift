@@ -33,5 +33,44 @@ public class ExpoSpotifySDKModule: Module {
                 promise.reject(error)
             }
         }
+
+        AsyncFunction("connectToRemote") { (accessToken: String?, promise: Promise) in
+            if let accessToken = accessToken {
+                spotifySession.appRemote.connectionParameters.accessToken = accessToken
+            } else if let session = spotifySession.currentSession {
+                spotifySession.appRemote.connectionParameters.accessToken = session.accessToken
+            } else {
+                promise.reject("NO_SESSION", "No active Spotify session or access token provided")
+                return
+            }
+
+            spotifySession.connectRemote()
+            promise.resolve(true)
+        }
+
+        AsyncFunction("playURI") { (uri: String, accessToken: String?, promise: Promise) in
+            if let accessToken = accessToken {
+                spotifySession.appRemote.connectionParameters.accessToken = accessToken
+            }
+
+            if spotifySession.appRemote.isConnected {
+                spotifySession.appRemote.playerAPI?.play(uri) { _, error in
+                    if let error = error {
+                        promise.reject("ERR_SPOTIFY_REMOTE", error.localizedDescription)
+                    } else {
+                        promise.resolve(true)
+                    }
+                }
+            } else {
+                // If not connected, use authorizeAndPlayURI which handles waking up/opening the app if needed
+                spotifySession.appRemote.authorizeAndPlayURI(uri)
+                promise.resolve(true)
+            }
+        }
+
+        AsyncFunction("disconnectFromRemote") { promise: Promise in
+            spotifySession.appRemote.disconnect()
+            promise.resolve(true)
+        }
     }
 }

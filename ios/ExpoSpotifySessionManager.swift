@@ -10,6 +10,13 @@ enum SessionManagerError: Error {
 final class ExpoSpotifySessionManager: NSObject {
     weak var module: ExpoSpotifySDKModule?
     var authPromiseSeal: Resolver<SPTSession>?
+    var currentSession: SPTSession?
+    
+    lazy var appRemote: SPTAppRemote = {
+        let appRemote = SPTAppRemote(configuration: configuration!, logLevel: .debug)
+        appRemote.delegate = self
+        return appRemote
+    }()
 
     static let shared = ExpoSpotifySessionManager()
 
@@ -71,6 +78,10 @@ final class ExpoSpotifySessionManager: NSObject {
                 sessionManager?.initiateSession(with: SPTScopeSerializer.deserializeScopes(scopes), options: .default, campaign: nil)
             }
         }
+    }
+
+    func connectRemote() {
+        appRemote.connect()
     }
 
     func spotifyAppInstalled() -> Bool {

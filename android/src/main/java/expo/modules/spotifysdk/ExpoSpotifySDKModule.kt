@@ -1,5 +1,9 @@
 package expo.modules.spotifysdk
 
+import com.spotify.android.appremote.api.ConnectionParams
+import com.spotify.android.appremote.api.Connector
+import com.spotify.android.appremote.api.SpotifyAppRemote
+
 import android.content.pm.PackageManager
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.modules.Module
@@ -38,6 +42,10 @@ class ExpoSpotifySDKModule : Module() {
   private val requestCode = 2095
   private var requestConfig: SpotifyConfigOptions? = null
   private var authPromise: Promise? = null
+  private var spotifyRemote: SpotifyAppRemote? = null
+  private var clientId: String? = null
+  private var redirectUri: String? = null
+
   private val context
     get() = appContext.reactContext ?: throw Exceptions.ReactContextLost()
   private val currentActivity
@@ -57,8 +65,8 @@ class ExpoSpotifySDKModule : Module() {
           context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_META_DATA)
         val applicationInfo = packageInfo.applicationInfo
         val metaData = applicationInfo?.metaData
-        val clientId = metaData?.getString("spotifyClientId")
-        val redirectUri = metaData?.getString("spotifyRedirectUri")
+        clientId = metaData?.getString("spotifyClientId")
+        redirectUri = metaData?.getString("spotifyRedirectUri")
 
         requestConfig = config
 
@@ -175,6 +183,80 @@ class ExpoSpotifySDKModule : Module() {
           }
         }
       }
+    }
+
+    AsyncFunction("connectToRemote") { promise: Promise ->
+        val connectionParams = ConnectionParams.Builder(clientId)
+            .setRedirectUri(redirectUri)
+            .showAuthView(true)
+            .build()
+
+        SpotifyAppRemote.connect(context, connectionParams, object : Connector.ConnectionListener {
+            override fun onConnected(appRemote: SpotifyAppRemote) {
+                // Store the remote for later use
+                spotifyRemote = appRemote
+                promise.resolve(true)
+            }
+
+            override fun onFailure(throwable: Throwable) {
+                promise.reject("ERR_SPOTIFY_REMOTE", throwable.message, throwable)
+            }
+        })
+    }
+
+    AsyncFunction("disconnectFromRemote") { promise: Promise ->
+        if (spotifyRemote != null) {
+            SpotifyAppRemote.disconnect(spotifyRemote)
+            spotifyRemote = null
+        }
+        promise.resolve(true)
+    }
+
+    AsyncFunction("playURI") { uri: String, accessToken: String?, promise: Promise ->
+        val currentClientId = clientId ?: run {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_META_DATA)
+            packageInfo.applicationInfo?.metaData?.getString("spotifyClientId")
+        }
+        val currentRedirectUri = redirectUri ?: run {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_META_DATA)
+            packageInfo.applicationInfo?.metaData?.getString("spotifyRedirectUri")
+        }
+
+        if (currentClientId == null || currentRedirectUri == null) {
+            promise.reject("ERR_CONFIG", "Spotify Client ID or Redirect URI not found in Manifest", null)
+            return@AsyncFunction
+        }
+
+        val connectionParams = ConnectionParams.Builder(currentClientId)
+            .setRedirectUri(currentRedirectUri)
+            .showAuthView(true)
+            .apply {
+                if (accessToken != null) {
+                    // Note: Spotify App Remote doesn't expose a direct "setToken" in all versions, 
+                    // but it uses the system-wide Spotify login. 
+                    // However, we can use the token for other API calls if needed.
+                }
+            }
+            .build()
+
+        val connectionListener = object : Connector.ConnectionListener {
+            override fun onConnected(appRemote: SpotifyAppRemote) {
+                spotifyRemote = appRemote
+                appRemote.playerApi.play(uri)
+                promise.resolve(true)
+            }
+
+            override fun onFailure(throwable: Throwable) {
+                promise.reject("ERR_SPOTIFY_REMOTE", throwable.message, throwable)
+            }
+        }
+
+        if (spotifyRemote?.isConnected == true) {
+            spotifyRemote?.playerApi?.play(uri)
+            promise.resolve(true)
+        } else {
+            SpotifyAppRemote.connect(context, connectionParams, connectionListener)
+        }
     }
   }
 }
