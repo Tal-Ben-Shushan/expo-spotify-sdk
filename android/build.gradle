@@ -11,7 +11,6 @@ useExpoPublishing()
 
 repositories {
   mavenCentral()
-  maven { url "https://maven.spotify.com/repository/releases" }
 }
 
 // If you want to use the managed Android SDK versions from expo-modules-core, set this to true.
@@ -50,5 +49,6 @@ android {
 dependencies {
    implementation 'com.squareup.okhttp3:okhttp:4.9.2'
    implementation "com.spotify.android:auth:2.1.2"
-   implementation "com.spotify.android:app-remote-lib:0.7.2"
+   implementation files('libs/spotify-app-remote-release-0.8.0.aar')
+   implementation "com.google.code.gson:gson:2.10.1"
 }
