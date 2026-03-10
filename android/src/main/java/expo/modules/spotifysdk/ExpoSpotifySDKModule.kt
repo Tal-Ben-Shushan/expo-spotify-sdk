@@ -214,13 +214,19 @@ class ExpoSpotifySDKModule : Module() {
             .build()
 
         SpotifyAppRemote.connect(context, connectionParams, object : Connector.ConnectionListener {
+            private var isSettled = false
+
             override fun onConnected(appRemote: SpotifyAppRemote) {
+                if (isSettled) return
+                isSettled = true
                 // Store the remote for later use
                 spotifyRemote = appRemote
                 promise.resolve(true)
             }
 
             override fun onFailure(throwable: Throwable) {
+                if (isSettled) return
+                isSettled = true
                 promise.reject("ERR_SPOTIFY_REMOTE", throwable.message, throwable)
             }
         })
@@ -254,18 +260,29 @@ class ExpoSpotifySDKModule : Module() {
             .build()
 
         val connectionListener = object : Connector.ConnectionListener {
+            private var isSettled = false
+
             override fun onConnected(appRemote: SpotifyAppRemote) {
+                if (isSettled) return
                 spotifyRemote = appRemote
                 appRemote.playerApi.play(uri)
                     .setResultCallback {
-                        promise.resolve(true)
+                        if (!isSettled) {
+                            isSettled = true
+                            promise.resolve(true)
+                        }
                     }
                     .setErrorCallback { throwable ->
-                        promise.reject("ERR_PLAYBACK", throwable.message, throwable)
+                        if (!isSettled) {
+                            isSettled = true
+                            promise.reject("ERR_PLAYBACK", throwable.message, throwable)
+                        }
                     }
             }
 
             override fun onFailure(throwable: Throwable) {
+                if (isSettled) return
+                isSettled = true
                 promise.reject("ERR_SPOTIFY_REMOTE", throwable.message, throwable)
             }
         }
