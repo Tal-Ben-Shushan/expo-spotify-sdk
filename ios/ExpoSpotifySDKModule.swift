@@ -44,8 +44,11 @@ public class ExpoSpotifySDKModule: Module {
                 return
             }
 
-            spotifySession.connectRemote()
-            promise.resolve(true)
+            spotifySession.connectRemote().done { _ in
+                promise.resolve(true)
+            }.catch { error in
+                promise.reject(error)
+            }
         }
 
         AsyncFunction("playURI") { (uri: String, promise: Promise) in
@@ -60,6 +63,8 @@ public class ExpoSpotifySDKModule: Module {
             } else {
                 // If not connected, use authorizeAndPlayURI which handles waking up/opening the app if needed
                 spotifySession.appRemote.authorizeAndPlayURI(uri)
+                // Note: authorizeAndPlayURI doesn't have a callback in Spotify iOS SDK, 
+                // but it triggers an app switch. We resolve true as we've successfully initiated the request.
                 promise.resolve(true)
             }
         }

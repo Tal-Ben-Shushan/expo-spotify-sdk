@@ -32,11 +32,14 @@ Include the `expo-spotify-sdk` plugin in your `app.json/app.config.js` file with
   ...
 ```
 
-Required:
+- `clientID`: <string> the Spotify Client ID for your application
+- `scheme`: <string> the [URL scheme](https://docs.expo.dev/versions/latest/config/app/#scheme) to link into your app as part of the redirect URI
+- `host`: <string> the path of the redirect URI
 
-- `clientID`: &lt;string&gt; the Spotify Client ID for your application
-- `scheme`: &lt;string&gt; the [URL scheme](https://docs.expo.dev/versions/latest/config/app/#scheme) to link into your app as part of the redirect URI
-- `host`: &lt;string&gt; the path of the redirect URI
+> [!IMPORTANT]
+> Your **Redirect URI** will be automatically generated as: `<scheme>://<host>`.
+> You **must** register this exact URI in your [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/applications).
+> For example: `expo-spotify-sdk-example://authenticate`
 
 ## API Reference
 

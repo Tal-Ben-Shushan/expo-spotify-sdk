@@ -3,6 +3,10 @@ package expo.modules.spotifysdk
 import com.spotify.android.appremote.api.ConnectionParams
 import com.spotify.android.appremote.api.Connector
 import com.spotify.android.appremote.api.SpotifyAppRemote
+import com.spotify.protocol.client.Call
+import com.spotify.protocol.client.Result
+import com.spotify.protocol.client.ErrorCallback
+import com.spotify.protocol.client.ResultCallback
 
 import android.content.pm.PackageManager
 import expo.modules.kotlin.Promise
@@ -51,6 +55,16 @@ class ExpoSpotifySDKModule : Module() {
     get() = appContext.reactContext ?: throw Exceptions.ReactContextLost()
   private val currentActivity
     get() = appContext.currentActivity ?: throw Exceptions.MissingActivity()
+
+  private fun fetchConfigFromManifest(): Pair<String?, String?> {
+    return try {
+        val packageInfo = context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_META_DATA)
+        val metaData = packageInfo.applicationInfo?.metaData
+        Pair(metaData?.getString("spotifyClientId"), metaData?.getString("spotifyRedirectUri"))
+    } catch (e: Exception) {
+        Pair(null, null)
+    }
+  }
 
   override fun definition() = ModuleDefinition {
 
@@ -188,8 +202,15 @@ class ExpoSpotifySDKModule : Module() {
 
     AsyncFunction("connectToRemote") { token: String?, promise: Promise ->
         accessToken = token
-        val connectionParams = ConnectionParams.Builder(clientId)
-            .setRedirectUri(redirectUri)
+        
+        val (currentClientId, currentRedirectUri) = fetchConfigFromManifest()
+        if (currentClientId == null || currentRedirectUri == null) {
+            promise.reject("ERR_CONFIG", "Spotify Client ID or Redirect URI not found in Manifest", null)
+            return@AsyncFunction
+        }
+
+        val connectionParams = ConnectionParams.Builder(currentClientId)
+            .setRedirectUri(currentRedirectUri)
             .showAuthView(true)
             .build()
 
@@ -215,15 +236,8 @@ class ExpoSpotifySDKModule : Module() {
     }
 
     AsyncFunction("playURI") { uri: String, promise: Promise ->
-        val currentClientId = clientId ?: run {
-            val packageInfo = context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_META_DATA)
-            packageInfo.applicationInfo?.metaData?.getString("spotifyClientId")
-        }
-        val currentRedirectUri = redirectUri ?: run {
-            val packageInfo = context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_META_DATA)
-            packageInfo.applicationInfo?.metaData?.getString("spotifyRedirectUri")
-        }
-
+        val (currentClientId, currentRedirectUri) = fetchConfigFromManifest()
+        
         if (currentClientId == null || currentRedirectUri == null) {
             promise.reject("ERR_CONFIG", "Spotify Client ID or Redirect URI not found in Manifest", null)
             return@AsyncFunction
@@ -244,7 +258,12 @@ class ExpoSpotifySDKModule : Module() {
             override fun onConnected(appRemote: SpotifyAppRemote) {
                 spotifyRemote = appRemote
                 appRemote.playerApi.play(uri)
-                promise.resolve(true)
+                    .setResultCallback {
+                        promise.resolve(true)
+                    }
+                    .setErrorCallback { throwable ->
+                        promise.reject("ERR_PLAYBACK", throwable.message, throwable)
+                    }
             }
 
             override fun onFailure(throwable: Throwable) {
@@ -252,9 +271,15 @@ class ExpoSpotifySDKModule : Module() {
             }
         }
 
-        if (spotifyRemote?.isConnected == true) {
-            spotifyRemote?.playerApi?.play(uri)
-            promise.resolve(true)
+        val remote = spotifyRemote
+        if (remote != null && remote.isConnected) {
+            remote.playerApi.play(uri)
+                .setResultCallback {
+                    promise.resolve(true)
+                }
+                .setErrorCallback { throwable ->
+                    promise.reject("ERR_PLAYBACK", throwable.message, throwable)
+                }
         } else {
             SpotifyAppRemote.connect(context, connectionParams, connectionListener)
         }
@@ -262,9 +287,10 @@ class ExpoSpotifySDKModule : Module() {
 
     AsyncFunction("pause") { promise: Promise ->
         val remote = spotifyRemote
-        if (remote != null) {
+        if (remote != null && remote.isConnected) {
             remote.playerApi.pause()
-            promise.resolve(true)
+                .setResultCallback { promise.resolve(true) }
+                .setErrorCallback { promise.reject("ERR_PAUSE", it.message, it) }
         } else {
             promise.reject("ERR_NOT_CONNECTED", "Spotify Remote not connected", null)
         }
@@ -272,9 +298,10 @@ class ExpoSpotifySDKModule : Module() {
 
     AsyncFunction("resume") { promise: Promise ->
         val remote = spotifyRemote
-        if (remote != null) {
+        if (remote != null && remote.isConnected) {
             remote.playerApi.resume()
-            promise.resolve(true)
+                .setResultCallback { promise.resolve(true) }
+                .setErrorCallback { promise.reject("ERR_RESUME", it.message, it) }
         } else {
             promise.reject("ERR_NOT_CONNECTED", "Spotify Remote not connected", null)
         }
@@ -282,9 +309,10 @@ class ExpoSpotifySDKModule : Module() {
 
     AsyncFunction("skipToNext") { promise: Promise ->
         val remote = spotifyRemote
-        if (remote != null) {
+        if (remote != null && remote.isConnected) {
             remote.playerApi.skipNext()
-            promise.resolve(true)
+                .setResultCallback { promise.resolve(true) }
+                .setErrorCallback { promise.reject("ERR_SKIP_NEXT", it.message, it) }
         } else {
             promise.reject("ERR_NOT_CONNECTED", "Spotify Remote not connected", null)
         }
@@ -292,9 +320,10 @@ class ExpoSpotifySDKModule : Module() {
 
     AsyncFunction("skipToPrevious") { promise: Promise ->
         val remote = spotifyRemote
-        if (remote != null) {
+        if (remote != null && remote.isConnected) {
             remote.playerApi.skipPrevious()
-            promise.resolve(true)
+                .setResultCallback { promise.resolve(true) }
+                .setErrorCallback { promise.reject("ERR_SKIP_PREVIOUS", it.message, it) }
         } else {
             promise.reject("ERR_NOT_CONNECTED", "Spotify Remote not connected", null)
         }

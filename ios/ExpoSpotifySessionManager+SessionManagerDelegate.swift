@@ -22,10 +22,14 @@ extension ExpoSpotifySessionManager: SPTSessionManagerDelegate {
 extension ExpoSpotifySessionManager: SPTAppRemoteDelegate {
     public func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
         NSLog("Established connection to Spotify App Remote")
+        connectPromiseSeal?.fulfill(true)
+        connectPromiseSeal = nil
     }
 
     public func appRemote(_ appRemote: SPTAppRemote, didFailConnectionAttemptWithError error: Error?) {
         NSLog("Failed connection attempt to Spotify App Remote")
+        connectPromiseSeal?.reject(error ?? SessionManagerError.invalidConfiguration)
+        connectPromiseSeal = nil
     }
 
     public func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {

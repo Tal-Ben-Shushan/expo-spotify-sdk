@@ -10,6 +10,7 @@ enum SessionManagerError: Error {
 final class ExpoSpotifySessionManager: NSObject {
     weak var module: ExpoSpotifySDKModule?
     var authPromiseSeal: Resolver<SPTSession>?
+    var connectPromiseSeal: Resolver<Bool>?
     var currentSession: SPTSession?
     
     lazy var appRemote: SPTAppRemote = {
@@ -80,8 +81,11 @@ final class ExpoSpotifySessionManager: NSObject {
         }
     }
 
-    func connectRemote() {
-        appRemote.connect()
+    func connectRemote() -> PromiseKit.Promise<Bool> {
+        return Promise { seal in
+            self.connectPromiseSeal = seal
+            appRemote.connect()
+        }
     }
 
     func spotifyAppInstalled() -> Bool {
