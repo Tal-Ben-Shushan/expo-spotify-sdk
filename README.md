@@ -41,6 +41,18 @@ Include the `expo-spotify-sdk` plugin in your `app.json/app.config.js` file with
 > You **must** register this exact URI in your [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/applications).
 > For example: `expo-spotify-sdk-example://authenticate`
 
+### Android Dashboard Configuration
+
+For the **App Remote** (playback controls) to work on Android, you **must** also configure your Android Package and Fingerprints in the Spotify Dashboard:
+
+1. Go to your app in the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard).
+2. Click **Edit Details**.
+3. Under **Android Packages**, add:
+   - **Package Name**: Your Android package name (e.g., `com.yourcompany.yourapp`).
+   - **SHA1 Fingerprint**: Your app's SHA1 fingerprint.
+     - For development, get it with: `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android`
+     - For Expo EAS builds: `eas credentials`
+
 ## API Reference
 
 ```typescript

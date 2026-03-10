@@ -1,4 +1,8 @@
-import { SpotifyConfig, SpotifySession } from "./ExpoSpotifySDK.types";
+import {
+  SpotifyConfig,
+  SpotifySession,
+  SpotifyPlayerState,
+} from "./ExpoSpotifySDK.types";
 import ExpoSpotifySDKModule from "./ExpoSpotifySDKModule";
 
 function isAvailable(): boolean {
@@ -41,6 +45,10 @@ function skipToPrevious(): Promise<boolean> {
   return ExpoSpotifySDKModule.skipToPrevious();
 }
 
+function getPlayerState(): Promise<SpotifyPlayerState> {
+  return ExpoSpotifySDKModule.getPlayerState();
+}
+
 const Remote = {
   connectToRemote,
   disconnectFromRemote,
@@ -49,6 +57,7 @@ const Remote = {
   resume,
   skipToNext,
   skipToPrevious,
+  getPlayerState,
 };
 
 const Authenticate = {

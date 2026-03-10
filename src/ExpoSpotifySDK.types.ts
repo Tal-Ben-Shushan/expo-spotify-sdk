@@ -34,3 +34,22 @@ export type SpotifyScope =
   | "user-library-read"
   | "user-read-email"
   | "user-read-private";
+
+export interface SpotifyTrack {
+  name: string;
+  uri: string;
+  artist: string;
+  album: string;
+  duration: number;
+}
+
+export interface SpotifyPlayerState {
+  isPaused: boolean;
+  track: SpotifyTrack | null;
+  playbackPosition: number;
+  playbackSpeed: number;
+  playbackOptions: {
+    isShuffling: boolean;
+    repeatMode: number;
+  };
+}
