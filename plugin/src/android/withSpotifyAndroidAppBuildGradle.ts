@@ -33,6 +33,22 @@ android {
 }`;
     }
 
+    // Add local AAR support for the main app
+    const aarFix = `
+// Added by @tabash/expo-spotify-sdk to fix local AAR bundling
+repositories {
+    flatDir {
+        dirs project(':tabash-expo-spotify-sdk').file('libs')
+    }
+}
+
+dependencies {
+    implementation(name: 'spotify-app-remote-release-0.8.0', ext: 'aar')
+}
+`;
+    // Append to the end of the file
+    config.modResults.contents += aarFix;
+
     return config;
   });
 };

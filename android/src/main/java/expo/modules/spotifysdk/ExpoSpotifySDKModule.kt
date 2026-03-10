@@ -246,8 +246,8 @@ class ExpoSpotifySDKModule : Module() {
             .setRedirectUri(currentRedirectUri)
             .showAuthView(true)
             .apply {
-                if (accessToken != null) {
-                    promise.reject("ERR_SPOTIFY_REMOTE", "Spotify access token is required", null) 
+                if (accessToken == null) {
+                    promise.reject("ERR_SPOTIFY_REMOTE", "Spotify access token is required. Use connectToRemote(token) first.", null) 
                     return@AsyncFunction
                 }
             }
