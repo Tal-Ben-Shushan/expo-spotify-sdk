@@ -1,6 +1,6 @@
 {
   "name": "@tabash/expo-spotify-sdk",
-  "version": "0.4.3",
+  "version": "1.0.0",
   "description": "Expo Module for native Spotify SDK",
   "main": "build/index.js",
   "types": "build/index.d.ts",
