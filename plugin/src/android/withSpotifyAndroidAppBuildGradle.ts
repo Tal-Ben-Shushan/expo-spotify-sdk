@@ -35,10 +35,10 @@ android {
 
     // Add local AAR support for the main app
     const aarFix = `
-// Added by @tabash/expo-spotify-sdk to fix local AAR bundling
+// Added by @tabash21/expo-spotify-sdk to fix local AAR bundling
 repositories {
     flatDir {
-        dirs project(':tabash-expo-spotify-sdk').file('libs')
+        dirs project(':tabash21-expo-spotify-sdk').file('libs')
     }
 }
 

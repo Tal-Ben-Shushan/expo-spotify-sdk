@@ -1,5 +1,5 @@
 {
-  "name": "@tabash/expo-spotify-sdk",
+  "name": "@tabash21/expo-spotify-sdk",
   "version": "1.0.0",
   "description": "Expo Module for native Spotify SDK",
   "main": "build/index.js",

@@ -13,7 +13,7 @@ An Expo Module for the native [iOS](https://github.com/spotify/ios-sdk/) and [An
 ## Installation
 
 ```sh
-npx expo install @tabash/expo-spotify-sdk
+npx expo install @tabash21/expo-spotify-sdk
 ```
 
 ## Configuration
@@ -23,7 +23,7 @@ Include the `expo-spotify-sdk` plugin in your `app.json/app.config.js` file with
 ```javascript
   ...
   "plugins": [
-    ["@tabash/expo-spotify-sdk", {
+    ["@tabash21/expo-spotify-sdk", {
       "clientID": "<your-spotify-client-id>",
       "scheme": "expo-spotify-sdk-example",
       "host": "authenticate"
