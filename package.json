@@ -35,13 +35,13 @@
   "jest": {
     "preset": "expo-module-scripts"
   },
-  "repository": "https://github.com/Tal-Ben-Shushan/expo-spotify-sdk",
+  "repository": "https://github.com/tabash21/expo-spotify-sdk",
   "bugs": {
-    "url": "https://github.com/Tal-Ben-Shushan/expo-spotify-sdk/issues"
+    "url": "https://github.com/tabash21/expo-spotify-sdk/issues"
   },
-  "author": "Tal Ben Shushan (https:/github.com/Tal-Ben-Shushan/)",
+  "author": "Tal Ben Shushan (https:/github.com/tabash21/)",
   "license": "MIT",
-  "homepage": "https://github.com/Tal-Ben-Shushan/expo-spotify-sdk#readme",
+  "homepage": "https://github.com/tabash21/expo-spotify-sdk#readme",
   "devDependencies": {
     "@types/react": "^18.0.25",
     "expo-module-scripts": "^5.0.0",
