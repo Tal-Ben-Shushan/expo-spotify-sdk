@@ -145,5 +145,36 @@ public class ExpoSpotifySDKModule: Module {
                 promise.reject("ERR_NOT_CONNECTED", "Spotify Remote not connected")
             }
         }
+
+        AsyncFunction("getPlayerState") { (promise: Promise) in
+            if spotifySession.appRemote.isConnected {
+                spotifySession.appRemote.playerAPI?.getPlayerState { (result, error) in
+                    if let error = error {
+                        promise.reject("ERR_SPOTIFY_REMOTE", error.localizedDescription)
+                    } else if let state = result as? SPTAppRemotePlayerState {
+                        promise.resolve([
+                            "isPaused": state.isPaused,
+                            "track": [
+                                "name": state.track.name,
+                                "uri": state.track.uri,
+                                "artist": state.track.artist.name,
+                                "album": state.track.album.name,
+                                "duration": state.track.duration
+                            ],
+                            "playbackPosition": state.playbackPosition,
+                            "playbackSpeed": state.playbackSpeed,
+                            "playbackOptions": [
+                                "isShuffling": state.playbackOptions.isShuffling,
+                                "repeatMode": state.playbackOptions.repeatMode
+                            ]
+                        ])
+                    } else {
+                        promise.reject("ERR_PLAYER_STATE", "Could not get player state")
+                    }
+                }
+            } else {
+                promise.reject("ERR_NOT_CONNECTED", "Spotify Remote not connected")
+            }
+        }
     }
 }
