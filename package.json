@@ -1,6 +1,6 @@
 {
   "name": "@tabash21/expo-spotify-sdk",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Expo Module for native Spotify SDK",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -19,7 +19,9 @@
     "expo-spotify-sdk",
     "ExpoSpotifySDK",
     "spotify",
-    "remote"
+    "remote",
+    "sdk",
+    "spotify-react-native"
   ],
   "files": [
     "plugin/build",
